@@ -10,11 +10,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context) : BaseApiController
+public class AccountController : BaseApiController
 {
-    private readonly UserManager<User> _userManager = userManager;
-    private readonly TokenService _tokenService = tokenService;
-    private readonly StoreContext _context = context;
+    private readonly UserManager<User> _userManager;
+    private readonly TokenService _tokenService;
+    private readonly StoreContext _context;
+
+    public AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context)
+    {
+        _context = context;
+        _tokenService = tokenService;
+        _userManager = userManager;
+    }
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
@@ -26,7 +33,7 @@ public class AccountController(UserManager<User> userManager, TokenService token
         var userBasket = await RetrieveBasket(loginDto.Username);
         var anonBasket = await RetrieveBasket(Request.Cookies["buyerId"]);
 
-        if (anonBasket != null) 
+        if (anonBasket != null)
         {
             if (userBasket != null) _context.Baskets.Remove(userBasket);
             anonBasket.BuyerId = user.UserName;
@@ -78,6 +85,16 @@ public class AccountController(UserManager<User> userManager, TokenService token
             Token = await _tokenService.GenerateToken(user),
             Basket = userBasket?.MapBasketToDto()
         };
+    }
+
+    [Authorize]
+    [HttpGet("savedAddress")]
+    public async Task<ActionResult<UserAddress>> GetSavedAddress()
+    {
+        return await _userManager.Users
+            .Where(x => x.UserName == User.Identity.Name)
+            .Select(user => user.Address)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<Basket> RetrieveBasket(string buyerId)
