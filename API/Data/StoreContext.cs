@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
-public class StoreContext : IdentityDbContext<User, Role, int>
+public class StoreContext(DbContextOptions options) : IdentityDbContext<User, Role, int>(options)
 {
-    public StoreContext(DbContextOptions options) : base(options)
-    {
-    }
-
     public DbSet<Product> Products { get; set; }
     public DbSet<Basket> Baskets { get; set; }
 

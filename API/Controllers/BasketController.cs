@@ -7,13 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class BasketController : BaseApiController
+public class BasketController(StoreContext context) : BaseApiController
 {
-    private readonly StoreContext _context;
-    public BasketController(StoreContext context)
-    {
-        _context = context;
-    }
+    private readonly StoreContext _context = context;
 
     [HttpGet(Name = "GetBasket")]
     public async Task<ActionResult<BasketDto>> GetBasket()

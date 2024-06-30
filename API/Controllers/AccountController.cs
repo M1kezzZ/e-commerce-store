@@ -10,18 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController : BaseApiController
+public class AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context) : BaseApiController
 {
-    private readonly UserManager<User> _userManager;
-    private readonly TokenService _tokenService;
-    private readonly StoreContext _context;
-
-    public AccountController(UserManager<User> userManager, TokenService tokenService, StoreContext context)
-    {
-        _context = context;
-        _tokenService = tokenService;
-        _userManager = userManager;
-    }
+    private readonly UserManager<User> _userManager = userManager;
+    private readonly TokenService _tokenService = tokenService;
+    private readonly StoreContext _context = context;
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)

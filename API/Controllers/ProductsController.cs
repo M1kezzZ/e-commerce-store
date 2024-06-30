@@ -7,13 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class ProductsController : BaseApiController
+public class ProductsController(StoreContext context) : BaseApiController
 {
-    private readonly StoreContext _context;
-    public ProductsController(StoreContext context)
-    {
-        _context = context;
-    }
+    private readonly StoreContext _context = context;
 
     [HttpGet]
     public async Task<ActionResult<PageList<Product>>> GetProducts([FromQuery] ProductParams productParams)
