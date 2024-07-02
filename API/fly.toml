@@ -1,0 +1,28 @@
+# fly.toml app configuration file generated for m1k33restore on 2024-07-02T21:53:27+10:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'm1k33restore'
+primary_region = 'syd'
+
+[build]
+  image = 'm1k33/new-e-commerce:latest'
+
+[env]
+  ASPNETCORE_URLS="http://+:8080"
+  StripeSettings__PublishableKey="pk_test_51PWfDYBdQLtHQEocpY5AtkssXDsyL2GZ1Uj7AQ1HUGKbGqiTgqiNTNprzw8VSdA5SoHfY0NR1Cgx8B5WKIZ7JcN700CLm7vXEm"
+
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
