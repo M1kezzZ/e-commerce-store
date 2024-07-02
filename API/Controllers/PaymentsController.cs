@@ -34,7 +34,7 @@ public class PaymentsController(PaymentService paymentService, StoreContext cont
         basket.ClientSecret ??= intent.ClientSecret;
 
         _context.Update(basket);
-        
+
         var result = await _context.SaveChangesAsync() > 0;
 
         if (!result) return BadRequest(new ProblemDetails { Title = "Problem updating basket with intent" });
@@ -53,7 +53,7 @@ public class PaymentsController(PaymentService paymentService, StoreContext cont
 
         var charge = (Charge)stripeEvent.Data.Object;
 
-        var order = await _context.Orders.FirstOrDefaultAsync(x => 
+        var order = await _context.Orders.FirstOrDefaultAsync(x =>
             x.PaymentIntentId == charge.PaymentIntentId);
 
         if (charge.Status == "succeeded") order.OrderStatus = OrderStatus.PaymentReceived;
