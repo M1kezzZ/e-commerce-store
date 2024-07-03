@@ -296,7 +296,7 @@ namespace API.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                columns: ["Id", "ConcurrencyStamp", "Name", "NormalizedName"],
                 values: new object[,]
                 {
                     { 1, null, "Member", "MEMBER" },
