@@ -11,11 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class ProductsController(StoreContext context, IMapper mapper, ImageService imageService) : BaseApiController
+public class ProductsController(StoreContext context, IMapper mapper, ImageService imageService, ILogger<ProductsController> logger) : BaseApiController
 {
     private readonly StoreContext _context = context;
     private readonly IMapper _mapper = mapper;
     private readonly ImageService _imageService = imageService;
+    private readonly ILogger<ProductsController> _logger = logger;
 
     [HttpGet]
     public async Task<ActionResult<PageList<Product>>> GetProducts([FromQuery] ProductParams productParams)
@@ -53,37 +54,82 @@ public class ProductsController(StoreContext context, IMapper mapper, ImageServi
         return Ok(new { brands, types });
     }
 
+    // [Authorize(Roles = "Admin")]
+    // [HttpPost]
+    // public async Task<ActionResult<Product>> CreateProduct([FromForm] CreateProductDto productDto)
+    // {
+    //     var product = _mapper.Map<Product>(productDto);
+
+    //     if (productDto.File != null)
+    //     {
+    //         var imageResult = await _imageService.AddImageAsync(productDto.File);
+
+    //         if (imageResult.Error != null) return BadRequest(new ProblemDetails
+    //         {
+    //             Title = imageResult.Error.Message
+    //         });
+
+    //         product.PictureUrl = imageResult.SecureUrl.ToString();
+    //         product.PublicId = imageResult.PublicId;
+    //     }
+
+    //     _context.Products.Add(product);
+
+    //     var result = await _context.SaveChangesAsync() > 0;
+
+    //     if (result) return CreatedAtRoute("GetProduct", new { Id = product.Id }, product);
+
+    //     return BadRequest(new ProblemDetails { Title = "Problem creating new product" });
+    // }
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct([FromForm] CreateProductDto productDto)
     {
-        var product = _mapper.Map<Product>(productDto);
-
-        if (productDto.File != null)
+        try
         {
-            var imageResult = await _imageService.AddImageAsync(productDto.File);
+            // Log incoming request details
+            _logger.LogInformation("CreateProduct called with Name: {Name}, Description: {Description}", productDto.Name, productDto.Description);
 
-            if (imageResult.Error != null) return BadRequest(new ProblemDetails
+            var product = _mapper.Map<Product>(productDto);
+
+            if (productDto.File != null)
             {
-                Title = imageResult.Error.Message
-            });
+                var imageResult = await _imageService.AddImageAsync(productDto.File);
 
-            product.PictureUrl = imageResult.SecureUrl.ToString();
-            product.PublicId = imageResult.PublicId;
+                if (imageResult.Error != null)
+                {
+                    _logger.LogError("Image upload error: {Error}", imageResult.Error.Message);
+                    return BadRequest(new ProblemDetails { Title = imageResult.Error.Message });
+                }
+
+                product.PictureUrl = imageResult.SecureUrl.ToString();
+                product.PublicId = imageResult.PublicId;
+            }
+
+            _context.Products.Add(product);
+
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (result)
+            {
+                _logger.LogInformation("Product created successfully with ID: {Id}", product.Id);
+                return CreatedAtRoute("GetProduct", new { Id = product.Id }, product);
+            }
+
+            _logger.LogWarning("Problem creating new product");
+            return BadRequest(new ProblemDetails { Title = "Problem creating new product" });
         }
-
-        _context.Products.Add(product);
-
-        var result = await _context.SaveChangesAsync() > 0;
-
-        if (result) return CreatedAtRoute("GetProduct", new { Id = product.Id }, product);
-
-        return BadRequest(new ProblemDetails { Title = "Problem creating new product" });
+        catch (Exception ex)
+        {
+            _logger.LogError("Exception in CreateProduct: {Exception}", ex.Message);
+            return BadRequest(new ProblemDetails { Title = "An error occurred while creating the product" });
+        }
     }
+
 
     [Authorize(Roles = "Admin")]
     [HttpPut]
-    public async Task<ActionResult<Product>> UpdateProduct([FromForm]UpdateProductDto productDto)
+    public async Task<ActionResult<Product>> UpdateProduct([FromForm] UpdateProductDto productDto)
     {
         var product = await _context.Products.FindAsync(productDto.Id);
 
@@ -97,10 +143,10 @@ public class ProductsController(StoreContext context, IMapper mapper, ImageServi
         {
             var imageUploadResult = await _imageService.AddImageAsync(productDto.File);
 
-            if (imageUploadResult.Error != null) 
+            if (imageUploadResult.Error != null)
                 return BadRequest(new ProblemDetails { Title = imageUploadResult.Error.Message });
 
-            if (!string.IsNullOrEmpty(product.PublicId)) 
+            if (!string.IsNullOrEmpty(product.PublicId))
                 await _imageService.DeleteImageAsync(product.PublicId);
 
             product.PictureUrl = imageUploadResult.SecureUrl.ToString();
@@ -122,7 +168,7 @@ public class ProductsController(StoreContext context, IMapper mapper, ImageServi
 
         if (product == null) return NotFound();
 
-        if (!string.IsNullOrEmpty(product.PublicId)) 
+        if (!string.IsNullOrEmpty(product.PublicId))
             await _imageService.DeleteImageAsync(product.PublicId);
 
         _context.Products.Remove(product);
