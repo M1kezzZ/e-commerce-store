@@ -4,14 +4,13 @@
 This project is a proof-of-concept E-Commerce store built using modern web development technologies. It demonstrates the integration of a .Net backend with a React frontend, utilizing Redux for state management, and Material UI for styling.
 
 ## Features
-- Backend built with .Net 7
-- Frontend developed with React 18
+- Backend built with .Net 8
+- Frontend developed with React
 - Client-side state management using Redux
 - Styling with Material UI
 - TypeScript for type safety and development efficiency
 - Entity Framework for database operations
 - ASP.NET Core Identity for authentication
-- React Router 6 for navigation
 
 ## Key Functionalities
 - Developer environment setup
@@ -28,10 +27,13 @@ This project is a proof-of-concept E-Commerce store built using modern web devel
 - Payment processing with Stripe (3D Secure)
 - Application deployment to Heroku
 
+## Live Demo
+Check out the live version of this project: [E-Commerce Store](https://m1k33restore.fly.dev)
+
 ## Installation and Setup
 
 ### Prerequisites
-- .Net 7 SDK
+- .Net 8 SDK
 - Node.js
 - SQL Server (or another compatible database)
 
@@ -83,4 +85,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 This project was inspired by various online resources and tutorials on .Net, React, and web development best practices.
-
